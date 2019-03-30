@@ -1,4 +1,4 @@
 *.byte
 *.cmi
 *.cmo
-_build*
+_build
