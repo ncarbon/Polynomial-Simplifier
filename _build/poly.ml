@@ -12,15 +12,25 @@ type pExp =
     List of terms added
     Plus([Term(2,1); Term(1,0)])
   *)
+  | Minus of pExp list
   | Times of pExp list (* List of terms multiplied *)
+  | Expo of pExp*int
+
 
 
 (*
   Function to traslate betwen AST expressions
   to pExp expressions
 *)
-let from_expr (_e: Expr.expr) : pExp =
-    Term(0,0) (* TODO *)
+let rec from_expr (_e: Expr.expr) : pExp =
+    match _e with
+    | Num i -> Term(i, 0)
+    | Var x -> Term(1, 1)
+    | Add (expr1, expr2) -> Plus [(from_expr expr1); (from_expr expr2)]
+    | Sub (expr1, expr2) -> Minus [(from_expr expr1); (from_expr expr2)]
+    | Mul (expr1, expr2) -> Times [(from_expr expr1); (from_expr expr2)]
+    | Pow (expr, i) ->  Expo((from_expr expr), i) 
+    | _ -> Term(0, 0)
 
 (* 
   Compute degree of a polynomial expression.
@@ -49,10 +59,41 @@ let compare (e1: pExp) (e2: pExp) : bool =
   Hint 1: Print () around elements that are not Term() 
   Hint 2: Recurse on the elements of Plus[..] or Times[..]
 *)
-let print_pExp (_e: pExp): unit =
-  (* TODO *)
-  Printf.printf("Not implemented");
-  print_newline()
+
+let match_exp_print(const: int)(exp: int): unit =
+  match exp with
+      | 0 -> Printf.printf "%d" const 
+      | 1 -> Printf.printf "%dx" const
+      | _ -> Printf.printf "%d^%d" const exp
+
+let rec print_term(const: int)(exp: int): unit =
+  match const with
+  | 0 -> Printf.printf "%d" 0
+  | 1 -> (match exp with
+        | 0 -> Printf.printf "%d" const
+        | 1 -> Printf.printf "x"
+        | _ -> Printf.printf "x^%d" exp)
+  | _ -> (match exp with
+        | 0 -> Printf.printf "%d" const 
+        | 1 -> Printf.printf "%dx" const 
+        | _ -> Printf.printf "%d^%d" const exp)
+and
+  print_op_list (lst: pExp list) (op: string) =
+    match lst with
+    | [] -> Printf.printf ""
+    | [x] -> print_pExp x;
+    | h::t -> print_pExp h; 
+              Printf.printf "%s" op;
+              print_op_list t op;
+and
+  print_pExp (_e: pExp): unit =
+    match _e with
+    | Term(c,v) -> print_term c v 
+    | Times(lst) -> Printf.printf "(";  print_op_list lst "*"; Printf.printf ")";
+    | Expo(e, i) -> print_pExp e; Printf.printf "^"; Printf.printf "%d" i;
+    | Plus(lst) -> Printf.printf "(";  print_op_list lst "+"; Printf.printf ")";
+    | Minus(lst) -> Printf.printf "(";  print_op_list lst "-"; Printf.printf ")";
+    | _ -> Printf.printf("Not implemented")
 
 (* 
   Function to simplify (one pass) pExpr

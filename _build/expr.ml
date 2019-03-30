@@ -1,10 +1,10 @@
 type expr = 
   | Num of int
   | Var of char
-  | Add of expr*expr
-  | Sub of expr*expr
-  | Mul of expr*expr
-  | Pow of expr*int
+  | Add of expr * expr
+  | Sub of expr * expr
+  | Mul of expr * expr
+  | Pow of expr * int
   | Pos of expr
   | Neg of expr
 
@@ -38,7 +38,11 @@ and
 (*
   Print expression and pass it through
 *)
-let print_expr (e:expr) :expr = 
+(* let print_expr (e:expr)  = 
   print_expr_r e;
-  print_newline ();
-  e
+  print_newline (); *)
+
+  let print_expr (e:expr) :expr = 
+    print_expr_r e;
+    print_newline ();
+    e 

@@ -12,5 +12,5 @@ let () =
   Parser.main Lexer.token |>
   print_expr |>
   from_expr |>
-  simplify |>
+  (* simplify |> *)
   print_pExp

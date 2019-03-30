@@ -26,6 +26,9 @@ ocamldep.opt -modules poly.ml > poly.ml.depends
 ocamlc.opt -c -o lexer.cmo lexer.ml
 # Target: poly.cmo, tags: { byte, compile, extension:cmo, extension:ml, file:poly.cmo, file:poly.ml, implem, ocaml, quiet, traverse }
 ocamlc.opt -c -o poly.cmo poly.ml
++ ocamlc.opt -c -o poly.cmo poly.ml
+File "poly.ml", line 96, characters 6-7:
+Warning 11: this match case is unused.
 # Target: main.cmo, tags: { byte, compile, extension:cmo, extension:ml, file:main.cmo, file:main.ml, implem, ocaml, quiet, traverse }
 ocamlc.opt -c -o main.cmo main.ml
 # Target: parser.ml.depends, tags: { extension:ml, file:parser.ml, ocaml, ocamldep, quiet, traverse }
