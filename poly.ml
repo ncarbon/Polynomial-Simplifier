@@ -116,19 +116,21 @@ and
   | Term (c, x) -> [Term(c, x)]
   | Plus(lst) -> List.concat(List.map flatten lst) *)
 
-(* let flatten list =
+let flatten list =
   let rec aux acc = function
   | [] -> acc
   | Term (c, x) :: t -> aux(Term(c, x)::acc) t
+  | Times lst :: t -> aux(Times lst ::acc) t
+  | Expo (c, x) :: t -> aux(Expo(c, x)::acc) t
   | Plus lst :: t -> aux(aux acc lst) t in
-  List.rev(aux [] list) *)
+        List.rev(aux [] list)
+
 
 let simplify1 (e:pExp): pExp =
-  e
     (* flatten plus *)
-    (* match e with
+    match e with
     | Plus pExpLst -> Plus (flatten pExpLst)
-    | _ -> e *)
+    | _ -> e
 
 
 (* compute if two pExpr lists are the same *)
