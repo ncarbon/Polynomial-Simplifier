@@ -12,20 +12,22 @@ type pExp =
     List of terms added
     Plus([Term(2,1); Term(1,0)])
   *)
-  | Minus of pExp list
   | Times of pExp list (* List of terms multiplied *)
   | Expo of pExp*int
 
 (*
   Function to traslate betwen AST expressions
   to pExp expressions
+
+  TODO: append plus, subs, etc
 *)
 let rec from_expr (_e: Expr.expr) : pExp =
     match _e with
     | Num i -> Term(i, 0)
     | Var x -> Term(1, 1)
+    | Neg ex -> Times [Term(-1, 0); (from_expr ex)]
+    | Sub (expr1, expr2) -> Plus [(from_expr expr1); (Times[Term(-1, 0); (from_expr expr2)])]
     | Add (expr1, expr2) -> Plus [(from_expr expr1); (from_expr expr2)]
-    | Sub (expr1, expr2) -> Minus [(from_expr expr1); (from_expr expr2)]
     | Mul (expr1, expr2) -> Times [(from_expr expr1); (from_expr expr2)]
     | Pow (expr, i) ->  Expo((from_expr expr), i) 
     | _ -> Term(0, 0)
@@ -90,7 +92,7 @@ and
     | Times(lst) -> Printf.printf "(";  print_op_list lst "*"; Printf.printf ")";
     | Expo(e, i) -> print_pExp e; Printf.printf "^"; Printf.printf "%d" i;
     | Plus(lst) -> Printf.printf "(";  print_op_list lst "+"; Printf.printf ")";
-    | Minus(lst) -> Printf.printf "(";  print_op_list lst "-"; Printf.printf ")";
+    (* | Minus(lst) -> Printf.printf "(";  print_op_list lst "-"; Printf.printf ")"; *)
     | _ -> Printf.printf("Not implemented")
 
 (* 

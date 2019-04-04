@@ -1,10 +1,10 @@
 type expr = 
   | Num of int
   | Var of char
-  | Add of expr * expr
-  | Sub of expr * expr
-  | Mul of expr * expr
-  | Pow of expr * int
+  | Add of expr*expr
+  | Sub of expr*expr
+  | Mul of expr*expr
+  | Pow of expr*int
   | Pos of expr
   | Neg of expr
 
