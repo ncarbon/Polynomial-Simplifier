@@ -18,8 +18,6 @@ type pExp =
 (*
   Function to traslate betwen AST expressions
   to pExp expressions
-
-  TODO: append plus, subs, etc
 *)
 let rec from_expr (_e: Expr.expr) : pExp =
     match _e with
@@ -112,28 +110,65 @@ and
       => Plus[Term(2,3); Term(6,5)]
   Hint 6: Find other situations that can arise
 *)
+
+(* let rec flatten (pLst: pExp list): pExp list = 
+  match pLst with
+  | Term (c, x) -> [Term(c, x)]
+  | Plus(lst) -> List.concat(List.map flatten lst) *)
+
+(* let flatten list =
+  let rec aux acc = function
+  | [] -> acc
+  | Term (c, x) :: t -> aux(Term(c, x)::acc) t
+  | Plus lst :: t -> aux(aux acc lst) t in
+  List.rev(aux [] list) *)
+
 let simplify1 (e:pExp): pExp =
-    e
+  e
+    (* flatten plus *)
+    (* match e with
+    | Plus pExpLst -> Plus (flatten pExpLst)
+    | _ -> e *)
+
+
+(* compute if two pExpr lists are the same *)
+let rec equal_pExpLst (l1) (l2): bool =
+  match l1, l2 with
+  | [], [] -> true
+  | [], _  -> false
+  | _, [] -> false
+  | h1::t1, h2::t2 -> h1 = h2 && equal_pExpLst t1 t2
 
 (* 
   Compute if two pExp are the same 
   Make sure this code works before you work on simplify1  
 *)
 let equal_pExp (_e1: pExp) (_e2: pExp) :bool =
-  true
+  match _e1, _e2 with
+    | (Plus lst1), (Plus lst2) -> equal_pExpLst lst1 lst2
+    | (Times lst1), (Times lst2) -> equal_pExpLst lst1 lst2
+    | (Term (c1, v1)), (Term (c2,v2)) -> c1 = c2 && v1 = v2
+    | (Expo (e1, i1)), (Expo (e2, i2)) ->  e1 = e2 && i1 = i2
+    | _ -> false
 
 (* Fixed point version of simplify1 
   i.e. Apply simplify1 until no 
   progress is made
 *)    
-let rec simplify (e:pExp): pExp =
+(* let rec simplify (e:pExp): pExp =
     let rE = simplify1(e) in
       print_pExp rE;
       if (equal_pExp e rE) then
         e
       else  
+        simplify(rE) *)
+let rec simplify (e:pExp): pExp =
+  let rE = simplify1(e) in
+      print_pExp rE;
+      if (equal_pExp e rE) then
+        e
+      else  
         simplify(rE)
-
 
 
 
