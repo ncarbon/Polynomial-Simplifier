@@ -116,7 +116,7 @@ and
   | Term (c, x) -> [Term(c, x)]
   | Plus(lst) -> List.concat(List.map flatten lst) *)
 
-let flatten list =
+let flattenPlus list =
   let rec aux acc = function
   | [] -> acc
   | Term (c, x) :: t -> aux(Term(c, x)::acc) t
@@ -125,11 +125,20 @@ let flatten list =
   | Plus lst :: t -> aux(aux acc lst) t in
         List.rev(aux [] list)
 
+let flattenTimes list =
+  let rec aux acc = function
+  | [] -> acc
+  | Term (c, x) :: t -> aux(Term(c, x)::acc) t
+  | Plus lst :: t -> aux(Times lst ::acc) t
+  | Expo (c, x) :: t -> aux(Expo(c, x)::acc) t
+  | Times lst :: t -> aux(aux acc lst) t in
+        List.rev(aux [] list)
 
 let simplify1 (e:pExp): pExp =
     (* flatten plus *)
     match e with
-    | Plus pExpLst -> Plus (flatten pExpLst)
+    | Plus pExpLst -> Plus (flattenPlus pExpLst)
+    | Times pExpLst -> Times (flattenTimes pExpLst)
     | _ -> e
 
 
