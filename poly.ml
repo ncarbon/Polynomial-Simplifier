@@ -15,6 +15,26 @@ type pExp =
   | Times of pExp list (* List of terms multiplied *)
   | Expo of pExp*int
 
+
+
+let flattenPlus list =
+  let rec aux acc = function
+  | [] -> acc
+  | Term (c, x) :: t -> aux(Term(c, x)::acc) t
+  | Times lst :: t -> aux(Times lst ::acc) t
+  | Expo (c, x) :: t -> aux(Expo(c, x)::acc) t
+  | Plus lst :: t -> aux(aux acc lst) t in
+        List.rev(aux [] list)
+
+let flattenTimes list =
+  let rec aux acc = function
+  | [] -> acc
+  | Term (c, x) :: t -> aux(Term(c, x)::acc) t
+  | Plus lst :: t -> aux(Times lst ::acc) t
+  | Expo (c, x) :: t -> aux(Expo(c, x)::acc) t
+  | Times lst :: t -> aux(aux acc lst) t in
+        List.rev(aux [] list)
+
 (*
   Function to traslate betwen AST expressions
   to pExp expressions
@@ -24,9 +44,9 @@ let rec from_expr (_e: Expr.expr) : pExp =
     | Num i -> Term(i, 0)
     | Var x -> Term(1, 1)
     | Neg ex -> Times [Term(-1, 0); (from_expr ex)]
-    | Sub (expr1, expr2) -> Plus [(from_expr expr1); (Times[Term(-1, 0); (from_expr expr2)])]
-    | Add (expr1, expr2) -> Plus [(from_expr expr1); (from_expr expr2)]
-    | Mul (expr1, expr2) -> Times [(from_expr expr1); (from_expr expr2)]
+    | Sub (expr1, expr2) -> Plus (flattenPlus([(from_expr expr1); (Times[Term(-1, 0); (from_expr expr2)])]))
+    | Add (expr1, expr2) -> Plus (flattenPlus([(from_expr expr1); (from_expr expr2)]))
+    | Mul (expr1, expr2) -> Times (flattenTimes([(from_expr expr1); (from_expr expr2)]))
     | Pow (expr, i) ->  Expo((from_expr expr), i) 
     | _ -> Term(0, 0)
 
@@ -111,28 +131,6 @@ and
   Hint 6: Find other situations that can arise
 *)
 
-(* let rec flatten (pLst: pExp list): pExp list = 
-  match pLst with
-  | Term (c, x) -> [Term(c, x)]
-  | Plus(lst) -> List.concat(List.map flatten lst) *)
-
-let flattenPlus list =
-  let rec aux acc = function
-  | [] -> acc
-  | Term (c, x) :: t -> aux(Term(c, x)::acc) t
-  | Times lst :: t -> aux(Times lst ::acc) t
-  | Expo (c, x) :: t -> aux(Expo(c, x)::acc) t
-  | Plus lst :: t -> aux(aux acc lst) t in
-        List.rev(aux [] list)
-
-let flattenTimes list =
-  let rec aux acc = function
-  | [] -> acc
-  | Term (c, x) :: t -> aux(Term(c, x)::acc) t
-  | Plus lst :: t -> aux(Times lst ::acc) t
-  | Expo (c, x) :: t -> aux(Expo(c, x)::acc) t
-  | Times lst :: t -> aux(aux acc lst) t in
-        List.rev(aux [] list)
 
 let simplify1 (e:pExp): pExp =
     (* flatten plus *)
