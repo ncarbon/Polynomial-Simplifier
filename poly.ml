@@ -1,19 +1,26 @@
 (* Sum type to encode efficiently polynomial expressions *)
 type pExp =
-  | Term of int*int (*
-      First int is the constant
-      Second int is the power of x 
-      10  -> Term(10,0)
-      2x -> Term(2,1)
-      3x^20 -> Term(3, 20)
-    *)
+  | Term of int*int 
   | Plus of pExp list
-  (*
-    List of terms added
-    Plus([Term(2,1); Term(1,0)])
-  *)
-  | Times of pExp list (* List of terms multiplied *)
+  | Times of pExp list
   | Expo of pExp*int
+
+(*
+    Function to traslate betwen AST expressions
+    to pExp expressions
+  *)
+let rec from_expr (_e: Expr.expr) : pExp =
+  match _e with
+    | Num i -> Term(i, 0)
+    | Var x -> Term(1, 1)
+    | Neg ex -> Times [Term(-1, 0); (from_expr ex)]
+    | Sub (expr1, expr2) -> Plus ([(from_expr expr1); (Times[Term(-1, 0); (from_expr expr2)])])
+    | Add (expr1, expr2) -> Plus ([(from_expr expr1); (from_expr expr2)])
+    | Mul (expr1, expr2) -> Times ([(from_expr expr1); (from_expr expr2)])
+    | Pow (expr, i) ->  (match from_expr expr with
+                          Term(c, x) -> Term(c, i) (* convert Pow(var(x), i) -> Term(1, i) *)
+                          | _ -> Expo((from_expr expr), i) )
+    | _ -> Term(0, 0)
 
 let rec maxDegreePlus (pLst: pExp list): int =
   match pLst with
@@ -35,10 +42,6 @@ sumDegreeTimes (pLst: pExp list) (sum: int): int =
     | _ -> sum
 (* 
   Compute degree of a polynomial expression.
-
-  Hint 1: Degree of Term(n,m) is m
-  Hint 2: Degree of Plus[...] is the max of the degree of args
-  Hint 3: Degree of Times[...] is the sum of the degree of args 
 *)
 and 
 degree (_e:pExp): int = 
@@ -57,7 +60,6 @@ let compare (e1: pExp) (e2: pExp) : int =
   if degree e1 > degree e2 then 1
   else if degree e1 < degree e2 then -1
   else 0
-
 
 let append l1 l2 =
   let rec loop acc l1 l2 =
@@ -85,7 +87,7 @@ let match_exp_print(const: int)(exp: int): unit =
 
 let rec print_term(const: int)(exp: int): unit =
   match const with
-  | 0 -> Printf.printf "%d" 0
+  | 0 -> Printf.printf "" 
   | 1 -> (match exp with
         | 0 -> Printf.printf "%d" const
         | 1 -> Printf.printf "x"
@@ -106,29 +108,13 @@ and
   print_pExp (_e: pExp): unit =
     match _e with
     | Term(c,v) ->  print_term c v; 
-    | Times(lst) -> Printf.printf "Times(";  print_op_list lst "*"; Printf.printf ")";
+    | Times(lst) -> Printf.printf "(";  print_op_list lst "*"; Printf.printf ")";
     | Expo(e, i) -> print_pExp e; Printf.printf "^"; Printf.printf "%d" i;
-    | Plus(lst) -> Printf.printf "Plus(";  print_op_list lst "+"; Printf.printf ")";
+    | Plus(lst) -> Printf.printf "(";  print_op_list lst "+"; Printf.printf ")";
     | _ -> Printf.printf("Not implemented")
-
-
 
 (* 
   Function to simplify (one pass) pExpr
-
-  n1 x^m1 * n2 x^m2 -> n1*n2 x^(m1+m2)
-  Term(n1,m1)*Term(n2,m2) -> Term(n1*n2,m1+m2)
-
-  Hint 1: Keep terms in Plus[...] sorted
-  Hint 2: flatten plus, i.e. Plus[ Plus[..], ..] => Plus[..]
-  Hint 3: flatten times, i.e. times of times is times
-  Hint 4: Accumulate terms. Term(n1,m)+Term(n2,m) => Term(n1+n2,m)
-          Term(n1, m1)*Term(n2,m2) => Term(n1*n2, m1+m2)
-  Hint 5: Use distributivity, i.e. Times[Plus[..],] => Plus[Times[..],]
-    i.e. Times[Plus[Term(1,1); Term(2,2)]; Term(3,3)] 
-      => Plus[Times[Term(1,1); Term(3,3)]; Times[Term(2,2); Term(3,3)]]
-      => Plus[Term(2,3); Term(6,5)]
-  Hint 6: Find other situations that can arise
 *)
 
 let rec simplify1 (e:pExp): pExp =
@@ -196,28 +182,10 @@ and
     | Term(n, m)::Plus l::t -> aux ((append ((List.fold_left (fun acc1 a -> Times(a::Term(n, m)::[])::acc1) [] l)) (acc))) t
     | [Plus l] -> [Times[Plus(acc);Plus l]]
     | Plus l::t -> append((List.fold_left (fun acc1 a -> Times(a::t)::acc1) [] l))(acc)
-    (* For each item in list l, multiply it by the rest of lst *)
     | _ -> acc
       in
         aux [] lst
-and
-  (*
-    Function to traslate betwen AST expressions
-    to pExp expressions
-  *)
-  from_expr (_e: Expr.expr) : pExp =
-      match _e with
-      | Num i -> Term(i, 0)
-      | Var x -> Term(1, 1)
-      | Neg ex -> Times [Term(-1, 0); (from_expr ex)]
-      | Sub (expr1, expr2) -> Plus ([(from_expr expr1); (Times[Term(-1, 0); (from_expr expr2)])])
-      | Add (expr1, expr2) -> Plus ([(from_expr expr1); (from_expr expr2)])
-      | Mul (expr1, expr2) -> Times ([(from_expr expr1); (from_expr expr2)])
-      | Pow (expr, i) ->  (match from_expr expr with
-                            Term(c, x) -> Term(c, i) (* convert Pow(var(x), i) -> Term(1, i) *)
-                            | _ -> Expo((from_expr expr), i) )
-      | _ -> Term(0, 0)
-
+  
 (* 
   Compute if two pExp are the same 
   Make sure this code works before you work on simplify1  
@@ -238,6 +206,3 @@ let rec simplify (e:pExp): pExp =
         e
       else  
         simplify(rE)
-
-
-

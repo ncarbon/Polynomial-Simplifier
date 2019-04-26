@@ -35,13 +35,6 @@ and
       | Pos(e) -> print_op1 "+" e
       | Neg(e) -> print_op1 "-" e
 
-(*
-  Print expression and pass it through
-*)
-(* let print_expr (e:expr)  = 
-  print_expr_r e;
-  print_newline (); *)
-
   let print_expr (e:expr) :expr = 
     print_expr_r e;
     print_newline ();
